@@ -1,0 +1,5 @@
+torch==2.4.1  # CPU build used for smoke tests; install the CUDA build on the GPU server
+momentfm==0.1.4
+transformers==4.33.3
+numpy==1.25.2
+scikit-learn==1.5.2

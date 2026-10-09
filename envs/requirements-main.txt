@@ -1,0 +1,8 @@
+torch==2.14.1  # CPU build used for smoke tests; install the CUDA build on the GPU server
+chronos-forecasting==2.3.2
+mantis-tsfm==1.1.0
+aeon==1.6.0
+scikit-learn==1.9.1
+pandas==2.3.3
+numpy==2.3.5
+transformers==5.19.0

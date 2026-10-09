@@ -37,3 +37,4 @@ paper/*.synctex.gz
 paper/*.pdf
 
 .DS_Store
+.venv*/

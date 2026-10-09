@@ -4,7 +4,7 @@
 
 ## 一句话定位
 
-局放的判别信息锚定在**工频相位**上，通用 TSFM 学到的是无锚定的时间先验。本文用**相位锚定的输入接口**，配合**冻结主干 + 轻量适配**，让通用 TSFM 在少量标注的实验室局放数据上稳定迁移。
+通用 TSFM 的输入约定（定长上下文 + 实例归一化）丢掉了局放测量中两个被标定的参考量：**工频相位**和**放电幅值**。本文用**测量锚定的输入接口**（按相位分 bin + 幅值回注），配合**冻结主干 + 轻量适配**，让通用 TSFM 在少量标注的实验室局放数据上稳定迁移。
 
 > 暂定题目：*Phase-Anchored Adaptation of Pretrained Time-Series Foundation Models for Few-Shot Partial Discharge Pattern Recognition*
 

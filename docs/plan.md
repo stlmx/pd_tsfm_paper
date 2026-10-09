@@ -1,7 +1,7 @@
 # 执行底本：分阶段方案
 
 > 状态标记：⬜ 未开始 · 🟨 进行中 · ✅ 完成 · ⛔ 阻塞
-> 最后更新：2026-10-09
+> 最后更新：2026-10-09（基座实测后，方法定位由「相位锚定」修正为「测量锚定：相位 + 幅值」，见 `docs/backbone_validation.md` 第 3 节）
 
 ## 0. 总览
 
@@ -10,7 +10,7 @@
 | P0 立项与数据审计 | 10/12 – 10/18 | 数据卡填完，切分协议定稿，代码骨架可跑 | **G0** 数据可用 |
 | P1 Pilot | 10/19 – 11/01 | 2 个 TSFM 线性探针，对比 MiniRocket / 1D-ResNet | **G1** 叙事方向拍板 |
 | P2 方法实现 | 11/02 – 11/22 | 相位锚定接口、LoRA 适配、全套基线流水线 | 全流程能端到端跑通 |
-| P3 正式实验 | 11/23 – 12/20 | E1–E7 全部跑完，结果冻结 | **G2** 结果冻结 |
+| P3 正式实验 | 11/23 – 12/20 | E1–E8 全部跑完，结果冻结 | **G2** 结果冻结 |
 | P4 写作 | 12/01 – 01/10 | 与 P3 并行，先写数据与方法 | 完整初稿 |
 | P5 自查与投稿 | 01/11 – 01/24 | 数字一致性、格式、投稿系统 | **G3** 投出 MST |
 | P6 审稿响应 | 投稿后 | 逐条回复；被拒则一周内转投 EPSR | — |
@@ -35,7 +35,7 @@
 | **C**：两者都不及 MiniRocket | 原方案不成立 | 停下来拍板 D3 回退方案：改用 PRPD 图谱 + 视觉预训练模型，或改写成「TSFM 在局放上的系统评测」 |
 
 ### G2 结果冻结（P3 出口）
-- [ ] E1–E7 全部完成，5 个 seed，逐样本预测写入 `outputs/frozen/<date>/`，并记录文件哈希。
+- [ ] E1–E8 全部完成，5 个 seed，逐样本预测写入 `outputs/frozen/<date>/`，并记录文件哈希。
 - [ ] 论文所有表格由脚本从冻结文件生成，不允许手抄数字。
 - [ ] `experiments/runs.csv` 中每一行都有 git commit 和输出路径。
 
@@ -53,18 +53,18 @@
 | T01 | P0 | 填写数据卡：类别、试品、采样率、CSV 字段、相位参考 | `docs/data_card.md` | — | ⬜ |
 | T02 | P0 | 数据审计脚本：类别分布、每试品样本数、长度分布、缺失值、典型样本可视化 | `scripts/audit_data.py`、审计报告 | T01 | ⬜ |
 | T03 | P0 | 分组切分协议与脚本（按试品；每个 seed 固定；少样本只从训练试品抽） | `src/splits.py`、`splits/*.json` | T02 | ⬜ |
-| T04 | P0 | 环境：8×4090，conda 环境与 HF 缓存，TSFM 权重下载 | `env/environment.yml` | — | ⬜ |
+| T04 | P0 | 环境：8×4090，**两个 conda 环境**（momentfm 与 chronos 的依赖冲突，见 `docs/backbone_validation.md` 第 6 节），共享 HF 缓存，下载权重 | `envs/env-main.yml`、`envs/env-moment.yml` | — | 🟨 CPU 版已验证可装 |
 | T05 | P0 | 代码骨架：数据加载、配置（yaml）、运行记录自动追加到 `runs.csv` | `src/`、`configs/` | T03、T04 | ⬜ |
 | T06 | P1 | 基线：MiniRocket（aeon/sktime）、1D-ResNet | 结果行写入 `runs.csv` | T05 | ⬜ |
 | T07 | P1 | TSFM 线性探针 × 2 个主干（选型见 D2） | 同上 | T05 | ⬜ |
 | T08 | P1 | 快速试验：最简相位切片（按工频周期切 patch）+ 线性探针 | 同上 | T07 | ⬜ |
 | T09 | P1 | **G1 评审**：画标签效率曲线，按 G1 表拍板 D3 | `docs/decisions.md` 记录 | T06–T08 | ⬜ |
-| T10 | P2 | 相位锚定接口：周期同步切片 + 相位位置编码 | `src/anchoring.py` | T09 | ⬜ |
+| T10 | P2 | 测量锚定接口：按工频相位分 bin（patch 对应固定相位窗）+ 幅值回注 | `src/anchoring.py` | T09 | ⬜ |
 | T11 | P2 | 适配方式：线性探针 / LoRA / 全量微调，统一接口 | `src/adapters.py` | T09 | ⬜ |
 | T12 | P2 | 全部基线：统计特征 + SVM/RF、PRPD-CNN、InceptionTime、随机初始化主干 | `src/baselines/` | T05 | ⬜ |
 | T13 | P2 | 噪声注入模块：白噪声、周期性窄带干扰、随机脉冲干扰，按 SNR 分档 | `src/noise.py` | T05 | ⬜ |
 | T14 | P2 | 批量调度：8 卡并行跑 seed × shot × 方法网格 | `scripts/launch_grid.sh` | T10–T13 | ⬜ |
-| T15 | P3 | 跑 E1–E7（见 `experiments/registry.csv`） | 冻结结果 | T14 | ⬜ |
+| T15 | P3 | 跑 E1–E8（见 `experiments/registry.csv`） | 冻结结果 | T14 | ⬜ |
 | T16 | P3 | 表格和图的自动生成脚本 | `scripts/make_tables.py`、`scripts/make_figs.py` | T15 | ⬜ |
 | T17 | P3 | **G2 评审**：结果冻结 | `outputs/frozen/` 与哈希清单 | T15、T16 | ⬜ |
 | T18 | P4 | 写第 3 节（测量平台与数据集）和第 4 节（方法） | `paper/` | T10 | ⬜ |
@@ -79,7 +79,7 @@
 | ID | 决策 | 选项 | 何时拍板 | 结论 |
 |---|---|---|---|---|
 | D1 | 主输入表征 | 原始脉冲波形 / 脉冲序列（相位、幅值、时间）/ PRPD/PRPS 矩阵序列 | G0 | 待数据卡 |
-| D2 | TSFM 主干（选 2–3 个） | MOMENT、Chronos-Bolt、Mantis、Moirai、TimesFM 等 | 调研报告出来后 | 待调研 |
+| D2 | TSFM 主干（选 2–3 个） | MOMENT、Chronos-Bolt、Mantis、Moirai、TimesFM 等 | 调研报告出来后 | **建议**：Mantis（主力）+ MOMENT-1-base + Chronos-2，覆盖对比 / 重建 / 预测三种范式。依据见 `docs/backbone_validation.md`，待作者确认 |
 | D3 | 叙事方向 | A / B / C（见 G1） | G1 | — |
 | D4 | 是否加入域内自监督对照（TS2Vec 等） | 加 / 不加 | P2 开始前 | 默认不加，有余力再加 |
 | D5 | 主投期刊 | MST（默认）/ EPSR / Measurement | G2 | MST |

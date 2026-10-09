@@ -17,6 +17,7 @@
 | `experiments/registry.csv` | 实验定义（一个实验对应论文里的一张表或一张图） |
 | `experiments/runs.csv` | 运行记录（训练脚本自动追加） |
 | `docs/paper_outline.md` | 论文骨架与图表预算 |
+| `docs/backbone_validation.md` | 基座选型、CPU 实测、合成探针发现、评测清单、环境冲突 |
 | `reports/` | 文献调研报告 |
 
 ## 红线
@@ -30,12 +31,26 @@
 
 ## 叙事定位
 
-不要写成「我们用了 TSFM + LoRA」的模块罗列。核心论点是：局放的判别信息锚定在**工频相位**上，通用 TSFM 学到的是无锚定的时间先验；**物理参考通过输入接口进入，不靠重训主干**，因此标注需求低。
+不要写成「我们用了 TSFM + LoRA」的模块罗列。核心论点（2026-10-09 基座实测后修正）：通用 TSFM 的输入约定（定长上下文 + 实例归一化）丢掉了局放测量中两个被标定的参考量，即**工频相位**和**放电幅值**。**测量锚定接口**（按相位分 bin + 幅值回注）把它们补回来，**物理参考通过接口进入，不靠重训主干**，因此标注需求低。
+
+不要再写「通用 TSFM 无法表达相位」：合成探针显示，只要窗口对齐相位 0，所有主干都能区分只差相位的两类。证据见 `docs/backbone_validation.md`。
 
 ## 算力与数据
 
 - 8 × RTX 4090（每卡 24 GB）。
 - 原始数据为 CSV，放在本地 `data/`。
+
+## 常用命令
+
+```bash
+# 两个隔离环境：momentfm 锁定 transformers 4.33.3，与 chronos-forecasting 冲突
+uv venv -p 3.11 .venv-main   && uv pip install -p .venv-main/bin/python -r envs/requirements-main.txt
+uv venv -p 3.11 .venv-moment && uv pip install -p .venv-moment/bin/python -r envs/requirements-moment.txt
+
+# 基座冒烟测试与合成表征探针（输出到 outputs/smoke/，不是识别精度）
+.venv-main/bin/python scripts/smoke_backbones.py --models mantis_v1 mantis_v2 chronos_bolt chronos2 minirocket
+cd scripts && ../.venv-main/bin/python probe_phase_amplitude.py --models raw mantis_v1 chronos2 minirocket
+```
 
 ## Commit 约定
 
