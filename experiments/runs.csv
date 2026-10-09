@@ -1,0 +1,1 @@
+run_id,exp_id,date,git_commit,config_path,method,backbone,input_interface,adaptation,shots_per_class,seed,split_file,gpu,train_time_min,macro_f1,accuracy,output_dir,status,notes

@@ -1,0 +1,12 @@
+exp_id,phase,purpose,question_answered,methods,input_interface,adaptation,shots_per_class,seeds,split,metrics,paper_slot,status,result_dir,notes
+D0,P0,数据审计,数据是否满足分组切分与相位锚定的前提,—,—,—,—,—,—,类别分布；每试品样本数；序列长度；缺失率,第3节 Table 1,todo,,G0 的输入
+P1a,P1,Pilot：强基线,小样本下非基础模型能做到多少,MiniRocket；1D-ResNet,raw,full training,5；10；20；all,5,group-by-specimen,macro-F1；accuracy,不入正文,todo,,G1 判据的参照线
+P1b,P1,Pilot：TSFM 线性探针,通用 TSFM 冻结嵌入是否可迁移,TSFM-A；TSFM-B（见 D2）,raw,linear probe,5；10；20；all,5,group-by-specimen,macro-F1；accuracy,不入正文,todo,,与 P1a 比较决定 A/B/C
+P1c,P1,Pilot：最简相位切片,相位锚定是否有信号,TSFM-A,phase-sync patch (minimal),linear probe,5；10；20,5,group-by-specimen,macro-F1,不入正文,todo,,仅用于 G1
+E1,P3,主结果：标签效率,本文方法在各标注量下是否优于全部基线,全部基线 + 原始 TSFM + 本文方法,raw / anchored,best per method,1；5；10；20；50；all,5,group-by-specimen,macro-F1；accuracy；per-class recall,Table 3 + Fig. 4（标签效率曲线）,todo,,主表
+E2,P3,预训练的贡献,增益来自预训练还是来自架构,同架构随机初始化 vs 预训练,anchored,LoRA,5；10；20；all,5,group-by-specimen,macro-F1,Table 4 部分,todo,,可选加入域内自监督对照（D4）
+E3,P3,消融：锚定接口,相位切片与相位位置编码各贡献多少,本文方法的各变体,raw / +phase patch / +phase PE / full,LoRA,5；10；20,5,group-by-specimen,macro-F1,Table 4,todo,,核心消融
+E4,P3,消融：适配方式与主干,冻结 / LoRA / 全量哪种最划算；结论是否依赖主干,2–3 个 TSFM × 3 种适配,anchored,linear probe；LoRA；full FT,5；20；all,5,group-by-specimen,macro-F1；可训练参数量；训练时间,Table 5,todo,,
+E5,P3,鲁棒性：跨试品,对未见试品是否泛化,本文方法 + 最强 3 个基线,anchored,LoRA,20,每折 1 次,leave-one-specimen-out,macro-F1,Table 6,todo,,审稿人必问
+E6,P3,鲁棒性：噪声,测量噪声下是否可靠,本文方法 + 最强 3 个基线,anchored,LoRA,20,5,group-by-specimen,不同 SNR（20/10/5/0 dB）与干扰类型下的 macro-F1,Fig. 5,todo,,白噪声；周期性窄带干扰；随机脉冲干扰
+E7,P3,可视化与效率,学到了什么；部署成本,本文方法 vs 原始 TSFM,raw / anchored,LoRA,20,1,group-by-specimen,t-SNE；注意力-相位图；参数量；推理延迟,Fig. 6 + Table 5,todo,,MST 偏好测量视角的解释

@@ -1,0 +1,39 @@
+# 实验室原始数据一律不进 git（即使是私有仓库）
+data/
+raw/
+*.mat
+*.h5
+*.hdf5
+*.parquet
+
+# 训练产物
+outputs/
+runs/
+checkpoints/
+wandb/
+lightning_logs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+hf_cache/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# LaTeX 中间文件
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.synctex.gz
+paper/*.pdf
+
+.DS_Store
