@@ -59,6 +59,17 @@ cd scripts && ../.venv-main/bin/python probe_phase_amplitude.py --models raw man
 
 调研的核心结论：三刊中**没有一篇**局放论文用通用 TSFM（仅按标题和元数据检索）。但「小样本局放」很拥挤，西安交大 Wang / Yan / Geng 团队在三刊反复发表，大概率是审稿人，必须引用。最接近的三篇竞品是 EPSR 248:111993、EPSR 254:112685、Measurement 256:118139，区分方式见报告。
 
+## 3b. Pilot 代码已写好（2026-10-09 追加）
+
+`src/pd/` 下的六个模块已实现并测试，70 个测试在两个环境下都通过，全流程已用合成夹具（`scripts/make_synthetic_data.py`）验证跑通。结构与三个内置防护见 `CLAUDE.md` 的「代码结构」一节。
+
+**数据一到，只需要三步**：
+1. 按数据卡改 `configs/pilot.yaml` 的 `data` 段（布局、列名、是否需要 `qualify_specimen_with_defect`；`raw_waveform` 还要 `fs` 和 `dead_time_s`）。
+2. 跑 `scripts/run_pilot.py`，MOMENT 单独一次调用。
+3. 按 G1 判据表读标签效率曲线，拍板 D3。
+
+合成夹具上的数字**不是结果**，不得入论文——它的类别差异是按文献定性设的，不是物理模型。
+
 ## 4. 本地接手后的三件事，按这个顺序
 
 ### 第一件：填数据卡（阻塞一切）

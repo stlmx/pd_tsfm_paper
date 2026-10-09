@@ -48,10 +48,36 @@
 uv venv -p 3.11 .venv-main   && uv pip install -p .venv-main/bin/python -r envs/requirements-main.txt
 uv venv -p 3.11 .venv-moment && uv pip install -p .venv-moment/bin/python -r envs/requirements-moment.txt
 
+# 测试（两个环境都要过）
+PYTHONPATH=src .venv-main/bin/python   -m unittest discover -s tests
+PYTHONPATH=src .venv-moment/bin/python -m unittest discover -s tests
+
 # 基座冒烟测试与合成表征探针（输出到 outputs/smoke/，不是识别精度）
 .venv-main/bin/python scripts/smoke_backbones.py --models mantis_v1 mantis_v2 chronos_bolt chronos2 minirocket
 cd scripts && ../.venv-main/bin/python probe_phase_amplitude.py --models raw mantis_v1 chronos2 minirocket
+
+# Pilot（MOMENT 依赖冲突，必须单独一次调用）
+.venv-main/bin/python scripts/make_synthetic_data.py --out /tmp/pd_synth   # 流程验证用的合成夹具
+PYTHONPATH=src .venv-main/bin/python   scripts/run_pilot.py --config configs/pilot.yaml
+PYTHONPATH=src .venv-moment/bin/python scripts/run_pilot.py --config configs/pilot.yaml \
+    --backbones moment_base --out outputs/pilot_moment
 ```
+
+## 代码结构
+
+| 模块 | 职责 |
+|---|---|
+| `src/pd/data.py` | CSV → 规范脉冲表示。布局写在 config 里（`pulse_list` / `raw_waveform` / `prpd_matrix`），不硬编码 |
+| `src/pd/splits.py` | 按试品分组切分、少样本抽样、以及故意泄漏的随机切分（只用于泄漏量化） |
+| `src/pd/anchoring.py` | **核心贡献**：相位分 bin + 幅值回注；E8 的两个旋钮（bin 宽度、相位偏移）在这里 |
+| `src/pd/backbones.py` | 统一的 `Embedder` 接口；`needs_fit` 标记需要拟合的提取器 |
+| `src/pd/pilot.py` | 标签效率网格扫描 |
+| `src/pd/runlog.py` | 写 `runs.csv`；工作区不干净时拒绝写入 |
+
+三个已内置的防护，改代码时不要绕过：
+1. `detect_pulses` 的 `dead_time_s` 是**必填**。值太小会把一个振铃脉冲重复计数，静默污染脉冲计数通道，必须从实测脉冲形状读出来。
+2. 试品编号在不同缺陷类别间冲突时，加载器**报错**而不是合并。合并会让折变粗；但如果同一物理试品真的带多类缺陷，拆开就是泄漏。两者无法从文件判断，所以要使用者明确表态（`qualify_specimen_with_defect`）。
+3. 需要拟合的特征提取器（如 MiniRocket 要估分位数）**每折只在训练集上拟合**，不碰测试折。
 
 ## Commit 约定
 
