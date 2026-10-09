@@ -12,6 +12,7 @@
 
 | 文件 | 作用 |
 |---|---|
+| `docs/handoff.md` | **本地接手的入口**：项目全貌、已完成的工作、接手后的前三件事 |
 | `docs/plan.md` | **唯一执行底本**：阶段、验收门 G0–G3、任务 T01–T23、待拍板决策 D1–D6、风险 |
 | `docs/data_card.md` | 数据事实；没填完不得开始 pilot |
 | `experiments/registry.csv` | 实验定义（一个实验对应论文里的一张表或一张图） |
@@ -26,7 +27,7 @@
 2. 论文里的数字只能来自 `outputs/frozen/`，由脚本生成，不手抄、不估计、不用占位数字。
 3. 强基线不得缺席：统计特征 + SVM/RF、PRPD-CNN、1D-ResNet、InceptionTime、MiniRocket、原始 TSFM、同架构随机初始化。
 4. 如果使用 LLM 类时序主干，必须做「去掉 LLM」的消融（对应 Tan et al., NeurIPS 2024）。
-5. 原始数据（`data/`）不进 git。
+5. 原始数据（`data/`）与付费论文（`local_materials/`）不进 git。
 6. 引用写入 bib 前逐篇核对 DOI；`research_notes/` 里标为未核实的条目不能直接引用。
 
 ## 叙事定位
