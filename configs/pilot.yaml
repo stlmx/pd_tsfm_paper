@@ -1,0 +1,44 @@
+# Pilot configuration (experiments P1a / P1b / P1c, gate G1).
+#
+# The data section is a PLACEHOLDER keyed to the synthetic fixture. Replace it
+# from docs/data_card.md once the real layout is known -- see decision D1.
+
+data:
+  root: /tmp/pd_synth
+  schema:
+    layout: pulse_list            # pulse_list | raw_waveform | prpd_matrix
+    glob: "**/*.csv"
+    filename_pattern: '(?P<defect>[^/]+)/(?P<specimen>S\d+)_(?P<batch>b\d+)'
+    columns:
+      phase: phase_deg
+      amplitude: q_pc
+      cycle: cycle
+    # True when specimen IDs restart per defect class. The loader refuses to
+    # guess, because merging distinct specimens coarsens the folds while
+    # splitting a shared one leaks.
+    qualify_specimen_with_defect: true
+    # raw_waveform only:
+    # fs: 10.0e6
+    # dead_time_s: 5.0e-6        # must cover one pulse's ringing; no safe default
+    # f_line: 50.0
+    # columns: {signal: v, phase_ref: ref}
+
+pilot:
+  # P1a baselines + P1b TSFM probes. MOMENT needs .venv-moment, so it is run in
+  # a second invocation with --backbones moment_base.
+  backbones: [minirocket, mantis_v1]
+  # raw          -> phase alignment destroyed (ablation baseline)
+  # anchored     -> phase-binned
+  # anchored+aux -> phase-binned with amplitude re-injected (P1c)
+  interfaces: [raw, anchored, anchored+aux]
+  shots: [5, 10, 20, 0]           # 0 = all training labels
+  seeds: [0, 1, 2, 3, 4]
+  split_scheme: leave-one-group-out   # or grouped-k-fold, or random-window-LEAKY
+  n_folds: 5
+  group_by: specimen              # switch to batch if specimens < 3 per class (R1)
+  anchor:
+    n_bins: 128                   # 2.8125 deg per bin; 128*4 = 512 = Mantis/MOMENT context
+    n_cycles: 4
+    phase_offset_deg: 0.0         # swept only in the E8 offset test
+    log_amplitude: true
+    half_cycle_symmetry: false

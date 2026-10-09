@@ -41,3 +41,5 @@ paper/*.pdf
 
 # 本地付费论文 PDF 与师姐回信素材，不进 git
 local_materials/
+tests/__pycache__/
+src/**/__pycache__/
